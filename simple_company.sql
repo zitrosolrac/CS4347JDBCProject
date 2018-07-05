@@ -51,8 +51,6 @@ CREATE TABLE `Customer` (
   `gender` char(1) NOT NULL,
   `dob` date NOT NULL,
   `email` varchar(45) NOT NULL,
-  `address_id` int(11) DEFAULT NULL,
-  `cc_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_UNIQUE` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
