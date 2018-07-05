@@ -1,5 +1,5 @@
-CREATE DATABASE  IF NOT EXISTS `SimpleCompany`;
-USE `SimpleCompany`;
+CREATE DATABASE  IF NOT EXISTS `simple_company`;
+USE `simple_company`;
 --
 -- Table structure for table `Address`
 --
