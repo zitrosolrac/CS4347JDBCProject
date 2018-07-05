@@ -1,6 +1,5 @@
 CREATE DATABASE  IF NOT EXISTS `SimpleCompany`;
 USE `SimpleCompany`;
-
 --
 -- Table structure for table `Address`
 --
@@ -9,13 +8,14 @@ DROP TABLE IF EXISTS `Address`;
 
 
 CREATE TABLE `Address` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `address1` varchar(90) NOT NULL,
   `address2` varchar(90) DEFAULT NULL,
   `city` varchar(45) NOT NULL,
   `state` varchar(45) NOT NULL,
   `zipcode` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
+  `customer_id` int(11) NOT NULL,
+  KEY `address_customer_fk_idx` (`customer_id`),
+  CONSTRAINT `address_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -27,12 +27,13 @@ DROP TABLE IF EXISTS `CreditCard`;
 
 
 CREATE TABLE `CreditCard` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   `number` varchar(45) NOT NULL,
   `expiration` date NOT NULL,
   `securityCode` varchar(4) NOT NULL,
-  PRIMARY KEY (`id`)
+  `customer_id` int(11) NOT NULL,
+  KEY `cc_customer_fk_idx` (`customer_id`),
+  CONSTRAINT `cc_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -53,11 +54,7 @@ CREATE TABLE `Customer` (
   `address_id` int(11) DEFAULT NULL,
   `cc_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email_UNIQUE` (`email`),
-  KEY `cc_fk_idx` (`cc_id`),
-  KEY `address_fk_idx` (`address_id`),
-  CONSTRAINT `customer_address_fk` FOREIGN KEY (`address_id`) REFERENCES `Address` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `customer_cc_fk` FOREIGN KEY (`cc_id`) REFERENCES `CreditCard` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  UNIQUE KEY `email_UNIQUE` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -97,3 +94,15 @@ CREATE TABLE `Purchase` (
   CONSTRAINT `purchase_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `purchase_product_fk` FOREIGN KEY (`product_id`) REFERENCES `Product` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+
+
+
+
+
+
+
+
+
+-- Dump completed on 2018-07-05 13:43:10
