@@ -13,10 +13,21 @@ public class CustomerDaoImpl implements CustomerDAO
             "INSERT INTO Customer (firstName, lastName, gender, dob, email) VALUES (?, ?, ?, ?, ?);";
 
 		private static final String	retrieveSQL = 
-						"SELECT (firstName, lastName, gender, dob, email) VALUES (?, ?, ?, ?, ?);";
+						"SELECT (firstName, lastName, gender, dob, email) FROM Customer WHERE id = ?;"; 
 
 		private static final String deleteSQL = 
-						"DELETE Address WHERE customer_id = ?;"; 
+						"DELETE Address WHERE customer_id = ?;";
+
+		private static final String updateSQL = 
+						"UPDATE Customer SET firstName = ?, lastName = ?, gender = ?, dob = ?, email = ? WHERE id=? ;";
+
+		private static final String zipSQL = 
+						"Select (firstName, lastName, gender, dob, email) FROM Customer INNER JOIN Address on Customer.ID = Address.customer_id WHERE Address.zipcode = ?;";  
+
+
+		private static final String dobSQL = 
+						"SELECT firstName, lastName, gender, dob, email FROM Customer WHERE dob BETWEEN ? and ?;"; 
+
 
     @Override
     public Customer create(Connection connection, Customer customer) throws SQLException, DAOException {
@@ -86,8 +97,30 @@ public class CustomerDaoImpl implements CustomerDAO
 
     @Override
     public int update(Connection connection, Customer customer) throws SQLException, DAOException {
-        return 0;
-    }
+		PreparedStatement ps = null; 
+
+		try { 
+			ps = connection.prepareStatement(updateSQL); 
+			ps.setString(1, customer.getFirstName());
+			ps.setString(2, customer.getLastName());
+			ps.setString(3, customer.getGender().toString());
+			ps.setString(4, customer.getDob());
+			ps.setString(5, customer.getEmail());
+			ps.setInt(6, customer.getId());
+			
+		int rows = ps.executeUpdate(); 
+		}finally{
+			if(ps != null && !ps.isClosed()) {
+				ps.close();
+			}
+			if(connection != null && !connection.isClosed()){
+				connection.close();
+			}
+
+		}
+        return rows;
+}
+
 
     @Override
     public int delete(Connection connection, Long id) throws SQLException, DAOException {
@@ -96,7 +129,7 @@ public class CustomerDaoImpl implements CustomerDAO
 				try { 
 					ps = connection.prepareStatement(deleteSQL);
 					ps.setLong(1, id);
-					ps.executeUpdate();
+					int rows = ps.executeUpdate();
 				} finally {
 						if (ps != null && !ps.isClosed()) {
 								ps.close();
@@ -105,16 +138,75 @@ public class CustomerDaoImpl implements CustomerDAO
 								connection.close();
 							}
 						}
-				return 0;
+				return rows; 
     }
 
     @Override
     public List<Customer> retrieveByZipCode(Connection connection, String zipCode) throws SQLException, DAOException {
-        return null;
+        
+				if (zipCode == null) {
+					throw new DAOException("Trying to retrieve Customer with null zip code"); 
+					}
+
+				List<Customer> resultSet = new ArrayList<Customer>(); 
+
+				PreparedStatement ps = null; 
+
+					ps = connection.prepareStatement(zipSQL); 
+					
+					ps.setString(1, zipCode);
+
+					ResultSet resultProduced  = ps.executeQuery(); 
+
+					while(resultProduced.next()) {
+
+						Customer tempCust = new Customer(); //create a customer instance for each row of the result set 
+						tempCust.setFirstName(resultProduced.getString("firstname"));
+						tempCust.setLastName(resultProduced.getString("lastname")); 
+						tempCust.setGender(resultProduced.getString("gender").charAt(0));
+						tempCust.setDob(resultProduced.getString("dob"));
+						tempCust.setEmail(resultProduced.getString("email"));
+
+						resultSet.add(tempCust);
+
+					}
+
+					return resultSet;
     }
 
     @Override
     public List<Customer> retrieveByDOB(Connection connection, Date startDate, Date endDate) throws SQLException, DAOException {
+
+				if(startDate == null || endDate == null) 
+					throw new DAOException("Trying to retrieve customer with null dob"); 
+
+					List<Customer> resultProduced = new ArrayList<Customer>(); 
+
+					PreparedStatement ps = null; 
+
+						ps = connection.prepareStatement(dobSQL);
+
+						ps.setDate(1, startDate);
+						ps.setDate(2, endDate); 
+					
+					ResultSet rs = ps.executeQuery(); 
+
+					//keep adding instances of customers that match the criteria until there are not any left 
+
+					while(rs.next()) { 
+
+						Customer tempCust = new Customer(); 
+						
+						tempCust.setFirstName(rs.getString("firstname")); 
+						tempCust.setLastName(rs.getString("lastname"));
+						tempCust.setGender(rs.getString("gender").charAt(0));
+						tempCust.setDob(rs.getDate("dob"));
+						tempCust.setEmail(rs.getString("email"));
+						resultProduced.add(tempCust); 
+					
+					}
+
+				return resultProduced; 
+
         return null;
     }
-}
